@@ -31,11 +31,11 @@ cd go-todo-api
 
 CREATE DATABASE IF NOT EXISTS to_do_list;
 USE to_do_list;
-CREATE TABLE tasksStruct (
+CREATE TABLE tasks (
     Id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(255),
     Detail TEXT,
-    DeaDline INT UNSIGNED
+    Deadline INT UNSIGNED
 );
 ```
 
