@@ -23,10 +23,12 @@ A simple RESTful To-Do List API built with **Go**, **Gorilla Mux**, **GORM**, an
 ```bash
 git clone https://github.com/shahyadKashkouli/go-todo-api.git
 cd go-todo-api
+```
 
 ## 📂 Setup MySQL Database
 
 ```bash
+
 CREATE DATABASE IF NOT EXISTS to_do_list;
 USE to_do_list;
 CREATE TABLE tasksStruct (
@@ -35,6 +37,8 @@ CREATE TABLE tasksStruct (
     Detail TEXT,
     DeaDline INT UNSIGNED
 );
+```
+
 
 
 
