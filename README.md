@@ -16,7 +16,7 @@ A simple RESTful To-Do List API built with **Go**, **Gorilla Mux**, **GORM**, an
 - [GORM](https://gorm.io/)
 - [MySQL](https://www.mysql.com/)
 
-🔧 Install Dependencies
+## 🔧 Install Dependencies
 Before running the project, make sure you have Go installed (v1.16 or above).
 Then install the required dependencies using go get:
 
