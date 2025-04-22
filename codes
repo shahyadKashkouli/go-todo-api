@@ -1,0 +1,160 @@
+package main
+
+import (
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"github.com/gorilla/mux"
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
+)
+
+// Task structure representing the 'tasks' table in the database
+type tasksStruct struct{
+	Id uint
+	Name string
+	Detail    string 
+	Deadline uint
+}
+
+// Setting the table name explicitly for GORM
+func (tasks tasksStruct) TableName() string {
+	return "tasks"
+}
+
+// Function to connect to the MySQL database
+func connectToDataBase() ( *gorm.DB , error) {
+	dsn := "username:password@tcp(localhost:3306)/to_do_list?charset=utf8mb4&parseTime=True&loc=Local" // Replace with your actual MySQL credentials
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	return db , err
+}
+
+
+// Homepage endpoint - simple welcome message
+func homePage(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("Wellcome to 'to do list' app .")
+}
+
+// Returns all tasks from the database
+func showAllTasks(w http.ResponseWriter , r *http.Request){
+	allTasks := []tasksStruct{}
+	db , err := connectToDataBase()
+	if err!= nil {
+		http.Error(w, "Couldn't connect to data base" , http.StatusInternalServerError)
+		log.Println("'showAllTasks' Couldn't connect to data base" , err)
+		return
+	}
+	db.Find(&allTasks)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type","application/json")
+	json.NewEncoder(w).Encode(allTasks)
+}
+
+// Returns a single task by ID
+func showOneTask(w http.ResponseWriter , r *http.Request){
+	id := mux.Vars(r)["id"]
+	targetTask := tasksStruct{}
+	db , err := connectToDataBase()
+	if err!= nil {
+		http.Error(w, "Couldn't connect to data base" , http.StatusInternalServerError)
+		log.Println("'showOneTask' Couldn't connect to data base" , err)
+		return
+	}
+	db.Find(&targetTask , id)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type","application/json")
+	json.NewEncoder(w).Encode(targetTask)
+}
+
+// Adds a new task to the database
+func addTask(w http.ResponseWriter , r *http.Request) {
+	newTask := tasksStruct{}
+	db , err := connectToDataBase()
+	if err!= nil {
+		http.Error(w, "Couldn't connect to data base" , http.StatusInternalServerError)
+		log.Println("'addTask' Couldn't connect to data base" , err)
+		return
+	}
+	reqBody , err := io.ReadAll(r.Body)
+	if err!= nil{
+		http.Error(w, "couldn't read json please try again" , http.StatusBadRequest)
+		log.Println("couldn't read user json ", err)
+		return
+	}
+	err = json.Unmarshal(reqBody , &newTask )
+	if err != nil{
+		http.Error(w, "wrong json foramt" , http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+
+	// Insert selected fields only
+	db.Select("Id" ,"Name", "Detail" ,"DeaDline" ).Create(&newTask)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("Add task Done!")
+}
+
+// Updates fields based on ID
+func updateTask(w http.ResponseWriter , r *http.Request){
+	id := mux.Vars(r)["id"]
+	updateTarget := tasksStruct{}
+	db , err := connectToDataBase()
+	if err!= nil {
+		http.Error(w, "Couldn't connect to data base" , http.StatusInternalServerError)
+		log.Println("'updateTask' Couldn't connect to data base" , err)
+		return
+	}
+	reqBody , err := io.ReadAll(r.Body)
+	if err!= nil{
+		http.Error(w, "couldn't read json please try again" , http.StatusBadRequest)
+		log.Println("couldn't read user json ", err)
+		return
+	}
+	err = json.Unmarshal(reqBody , &updateTarget )
+	if err != nil{
+		http.Error(w, "wrong json foramt" , http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+	db.Model(&updateTarget).Where("id=?",id).Updates(&updateTarget)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("Task update Done!")
+}
+
+// Deletes a task by ID
+func removeTask(w http.ResponseWriter , r *http.Request) {
+	id := mux.Vars(r)["id"]
+	db , err := connectToDataBase()
+	if err!= nil {
+		http.Error(w, "Couldn't connect to data base" , http.StatusInternalServerError)
+		log.Println("'removeTask' Couldn't connect to data base" , err)
+		return
+	}
+	db.Delete(& tasksStruct{}, id)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type","application/json")
+	json.NewEncoder(w).Encode("Task remove Done!")
+}
+
+// Main router handler - defines routes and HTTP methods
+func handler() {
+	router := mux.NewRouter()
+	router.HandleFunc("/", homePage).Methods("GET")
+	router.HandleFunc("/alltasks", showAllTasks).Methods("GET")
+	router.HandleFunc("/task/{id}" , showOneTask).Methods("GET") 
+	router.HandleFunc("/addtask" , addTask).Methods("POST")
+	router.HandleFunc("/update/task/{id}",updateTask).Methods("PUT")
+	router.HandleFunc("/delete/task/{id}" , removeTask).Methods("DELETE")
+	router.HandleFunc("/done/task/{id}" , removeTask).Methods("DELETE")
+	http.ListenAndServe(":8080" , router)
+}
+
+// Entry point of the application
+func main() {
+	handler()
+}
