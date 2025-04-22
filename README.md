@@ -49,5 +49,17 @@ CREATE TABLE tasks (
 ```
 
 
+💬 Example Request (POST /addtask)
+
+```bash
+{
+  "Id": 1,
+  "Name": "Finish homework",
+  "Detail": "Complete math and science chapters",
+  "Deadline": 20250430
+}
+
+```
+
 
 
