@@ -17,4 +17,13 @@ A simple RESTful To-Do List API built with **Go**, **Gorilla Mux**, **GORM**, an
 - [MySQL](https://www.mysql.com/)
 
 
+## ⚙️ Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shahyadKashkouli/go-todo-api.git
+cd go-todo-api
+
+
 
