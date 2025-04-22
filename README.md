@@ -20,10 +20,21 @@ A simple RESTful To-Do List API built with **Go**, **Gorilla Mux**, **GORM**, an
 ## ⚙️ Setup Instructions
 
 ### 1. Clone the repository
-
 ```bash
 git clone https://github.com/shahyadKashkouli/go-todo-api.git
 cd go-todo-api
+
+## 📂 Setup MySQL Database
+
+```bash
+CREATE DATABASE IF NOT EXISTS to_do_list;
+USE to_do_list;
+CREATE TABLE tasksStruct (
+    Id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255),
+    Detail TEXT,
+    DeaDline INT UNSIGNED
+);
 
 
 
